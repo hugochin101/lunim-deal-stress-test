@@ -125,8 +125,12 @@ export default function Home() {
             {!allChecked && toChange === 0 && <p className="muted">Mark every surprise as intended to unlock the checked deal.</p>}
             {allChecked && (
               <>
-                <p>Everyone has seen every surprise. This checked deal could be handed to a settlement smart contract:</p>
-                <pre>{spec}</pre>
+                <p className="ok">Ready to lock. Everyone has seen and accepted all {findings.length} surprises in “{deal.title}”.</p>
+                <p className="muted">The checked deal below can be handed to a settlement smart contract.</p>
+                <details>
+                  <summary>Show technical version (for developers)</summary>
+                  <pre>{spec}</pre>
+                </details>
                 <button onClick={() => navigator.clipboard.writeText(spec)}>Copy checked deal</button>
               </>
             )}
