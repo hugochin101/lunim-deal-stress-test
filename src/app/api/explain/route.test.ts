@@ -26,17 +26,17 @@ describe("POST /api/explain", () => {
   });
 
   it("uses AI wording when it only repeats computed figures", async () => {
-    fakeAi([{ id: "until-Crew pool", text: "The crew pool sees no money until takings pass £625,000." }]);
+    fakeAi([{ id: "until-Producer+Crew pool", text: "The crew pool sees no money until takings pass £625,000." }]);
     const res = await (await call({ deal, range }, "2")).json();
-    expect(res.explanations.find((e: { id: string }) => e.id === "until-Crew pool")).toMatchObject({ byAi: true });
+    expect(res.explanations.find((e: { id: string }) => e.id === "until-Producer+Crew pool")).toMatchObject({ byAi: true });
   });
 
   it("throws away AI wording with a made up number", async () => {
-    fakeAi([{ id: "until-Crew pool", text: "The crew pool sees no money until takings pass £600,000." }]);
+    fakeAi([{ id: "until-Producer+Crew pool", text: "The crew pool sees no money until takings pass £600,000." }]);
     const res = await (await call({ deal, range }, "3")).json();
-    const e = res.explanations.find((x: { id: string }) => x.id === "until-Crew pool");
+    const e = res.explanations.find((x: { id: string }) => x.id === "until-Producer+Crew pool");
     expect(e.byAi).toBe(false);
-    expect(e.text).toBe("Crew pool gets nothing until the film earns more than £625,000.");
+    expect(e.text).toBe("Producer and Crew pool get nothing until the film earns more than £625,000.");
   });
 
   it("refuses a deal that does not add up", async () => {

@@ -14,6 +14,8 @@ export interface Finding {
   figures: string[]; // every amount the sentence may mention
 }
 
+const listNames = (n: string[]) => (n.length < 2 ? n[0] : `${n.slice(0, -1).join(", ")} and ${n[n.length - 1]}`);
+
 // What is left after the fee, for a given amount earned.
 const afterFee = (deal: Deal, revenue: number) =>
   revenue - (deal.fee ? Math.floor((revenue * deal.fee.bps) / 10000) : 0);
@@ -61,24 +63,28 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
     });
   }
 
-  for (const who of parties(deal)) {
-    const at = starts[who];
+  // People whose money starts at the same point are grouped into one finding.
+  const byStart = new Map<number, string[]>();
+  for (const who of parties(deal)) byStart.set(starts[who], [...(byStart.get(starts[who]) ?? []), who]);
+  for (const [at, who] of byStart) {
+    const names = listNames(who);
+    const one = who.length === 1;
     if (at >= range.high) {
       const h = gbp(range.high);
       found.push({
-        id: `never-${who}`,
+        id: `never-${who.join("+")}`,
         severity: "high",
-        who: [who],
-        text: `Within your expected range (up to ${h}), ${who} is never paid at all.`,
+        who,
+        text: `Within your expected range (up to ${h}), ${names} ${one ? "is" : "are"} never paid at all.`,
         figures: [h],
       });
     } else if (at >= 100_000) {
       const a = gbp(at);
       found.push({
-        id: `until-${who}`,
+        id: `until-${who.join("+")}`,
         severity: at > range.low ? "high" : "medium",
-        who: [who],
-        text: `${who} gets nothing until the film earns more than ${a}.`,
+        who,
+        text: `${names} ${one ? "gets" : "get"} nothing until the film earns more than ${a}.`,
         figures: [a],
       });
     }
