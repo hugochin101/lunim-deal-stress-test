@@ -3,6 +3,7 @@ import { useState } from "react";
 import DealEditor from "@/components/DealEditor";
 import Chart from "@/components/Chart";
 import MyPart from "@/components/MyPart";
+import FixSuggestion from "@/components/FixSuggestion";
 import { Deal, validate } from "@/lib/deal";
 import { Finding, Range } from "@/lib/stress";
 import { samples } from "@/lib/samples";
@@ -98,6 +99,10 @@ export default function Home() {
                   <button className={choices[f.id] === "intended" ? "on" : ""} onClick={() => setChoices((c) => ({ ...c, [f.id]: "intended" }))}>Yes, we meant this</button>
                   <button className={choices[f.id] === "change" ? "on" : ""} onClick={() => setChoices((c) => ({ ...c, [f.id]: "change" }))}>No, change the deal</button>
                 </div>
+                {choices[f.id] === "change" && (
+                  <FixSuggestion deal={tidy(deal)} range={range} findingId={f.id}
+                    onUse={(d) => { edit(d); setMessage("Change applied. Run the stress test again to check the new deal."); }} />
+                )}
               </div>
             ))}
           </section>
