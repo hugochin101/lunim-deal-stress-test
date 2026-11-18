@@ -68,14 +68,13 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
   for (const who of parties(deal)) byStart.set(starts[who], [...(byStart.get(starts[who]) ?? []), who]);
   for (const [at, who] of byStart) {
     const names = listNames(who);
-    const one = who.length === 1;
     if (at >= range.high) {
       const h = gbp(range.high);
       found.push({
         id: `never-${who.join("+")}`,
         severity: "high",
         who,
-        text: `Within your expected range (up to ${h}), ${names} ${one ? "is" : "are"} never paid at all.`,
+        text: `Within your expected range (up to ${h}), nothing at all is paid to ${names}.`,
         figures: [h],
       });
     } else if (at >= 100_000) {
@@ -84,7 +83,7 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
         id: `until-${who.join("+")}`,
         severity: at > range.low ? "high" : "medium",
         who,
-        text: `${names} ${one ? "gets" : "get"} nothing until the film earns more than ${a}.`,
+        text: `Nothing is paid to ${names} until the film earns more than ${a}.`,
         figures: [a],
       });
     }

@@ -31,13 +31,13 @@ describe("startsAt", () => {
 describe("stressTest", () => {
   it("warns that producer and crew get nothing until £625,000", () => {
     const f = stressTest(deal, { low: 20_000_000, high: 150_000_000 });
-    expect(f.find((x) => x.id === "until-Producer+Crew")?.text).toBe("Producer and Crew get nothing until the film earns more than £625,000.");
+    expect(f.find((x) => x.id === "until-Producer+Crew")?.text).toBe("Nothing is paid to Producer and Crew until the film earns more than £625,000.");
   });
 
   it("warns when someone is never paid in the expected range", () => {
     const f = stressTest(deal, { low: 10_000_000, high: 60_000_000 });
     expect(f[0].id).toBe("never-Producer+Crew");
-    expect(f[0].text).toContain("Producer and Crew are never paid");
+    expect(f[0].text).toContain("nothing at all is paid to Producer and Crew");
     expect(f[0].severity).toBe("high");
   });
 

@@ -36,7 +36,7 @@ describe("POST /api/explain", () => {
     const res = await (await call({ deal, range }, "3")).json();
     const e = res.explanations.find((x: { id: string }) => x.id === "until-Producer+Crew pool");
     expect(e.byAi).toBe(false);
-    expect(e.text).toBe("Producer and Crew pool get nothing until the film earns more than £625,000.");
+    expect(e.text).toBe("Nothing is paid to Producer and Crew pool until the film earns more than £625,000.");
   });
 
   it("refuses a deal that does not add up", async () => {
