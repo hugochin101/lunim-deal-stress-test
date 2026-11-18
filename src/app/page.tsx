@@ -25,6 +25,7 @@ export default function Home() {
   const [unclear, setUnclear] = useState<string[]>([]);
 
   const errors = validate(tidy(deal));
+  if (!(range.low >= 0 && range.low < range.high)) errors.push("The lowest expected amount must be below the highest.");
   const reset = () => { setFindings(null); setChoices({}); setMessage(""); };
   const edit = (d: Deal) => { setDeal(d); reset(); };
 
@@ -91,7 +92,7 @@ export default function Home() {
         <>
           <section className="card">
             <h2>Surprises found ({findings.length})</h2>
-            <p className="muted">Every number comes from exact calculations, never from the AI. Mark each one before locking.</p>
+            <p className="muted">Every number comes from exact calculations, never from the AI. Reviewed {findings.filter((f) => choices[f.id]).length} of {findings.length}.</p>
             {findings.map((f) => (
               <div key={f.id} className={`finding ${f.severity}`}>
                 <div><span className="badge">{f.severity === "info" ? "note" : f.severity}</span>{f.plain}</div>
