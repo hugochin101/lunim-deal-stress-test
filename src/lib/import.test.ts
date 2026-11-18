@@ -8,12 +8,13 @@ describe("toDeal", () => {
     const { deal, unclear } = toDeal({
       title: "X",
       fee: { to: "Distributor", percent: 17.5 },
-      recoup: [{ to: "Investors", pounds: 250000.5 }],
+      recoup: [{ to: "Investors", pounds: 250000.5, percent_back: 115 }],
       split: [{ to: "A", percent: 60 }, { to: "B", percent: 40 }],
       unclear: ["Net profits is not defined."],
     });
     expect(deal.fee).toEqual({ to: "Distributor", bps: 1750 });
     expect(deal.recoup[0].amount).toBe(25_000_050);
+    expect(deal.recoup[0].percentBack).toBe(11500);
     expect(deal.split.map((s) => s.bps)).toEqual([6000, 4000]);
     expect(unclear).toEqual(["Net profits is not defined."]);
     expect(validate(deal)).toEqual([]);
