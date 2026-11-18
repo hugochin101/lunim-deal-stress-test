@@ -94,8 +94,8 @@ export default function Home() {
                 <div><span className="badge">{f.severity === "info" ? "note" : f.severity}</span>{f.plain}</div>
                 <p className="muted">{f.byAi ? "Reworded by AI; numbers checked against the calculation." : "Engine wording."}</p>
                 <div className="row">
-                  <button className={choices[f.id] === "intended" ? "on" : ""} onClick={() => setChoices({ ...choices, [f.id]: "intended" })}>Yes, we meant this</button>
-                  <button className={choices[f.id] === "change" ? "on" : ""} onClick={() => setChoices({ ...choices, [f.id]: "change" })}>No, change the deal</button>
+                  <button className={choices[f.id] === "intended" ? "on" : ""} onClick={() => setChoices((c) => ({ ...c, [f.id]: "intended" }))}>Yes, we meant this</button>
+                  <button className={choices[f.id] === "change" ? "on" : ""} onClick={() => setChoices((c) => ({ ...c, [f.id]: "change" }))}>No, change the deal</button>
                 </div>
               </div>
             ))}
