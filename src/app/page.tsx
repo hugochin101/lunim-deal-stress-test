@@ -2,6 +2,7 @@
 import { useState } from "react";
 import DealEditor from "@/components/DealEditor";
 import Chart from "@/components/Chart";
+import MyPart from "@/components/MyPart";
 import { Deal, validate } from "@/lib/deal";
 import { Finding, Range } from "@/lib/stress";
 import { samples } from "@/lib/samples";
@@ -99,6 +100,11 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </section>
+
+          <section className="card">
+            <h2>Show me my part</h2>
+            <MyPart deal={tidy(deal)} range={range} notes={findings} />
           </section>
 
           <section className="card">
