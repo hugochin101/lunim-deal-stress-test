@@ -31,10 +31,12 @@ export default function DealEditor({ deal, onChange }: { deal: Deal; onChange: (
             onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, to: e.target.value } : x)) })} />
           £<input type="number" aria-label="Amount paid back" min={0} step={1000} value={pounds(r.amount)}
             onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, amount: toPence(e.target.value) } : x)) })} />
+          <input type="number" aria-label="Percent paid back" min={100} max={300} step={5} value={percent(r.percentBack ?? 10000)}
+            onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, percentBack: toBps(e.target.value) } : x)) })} /> % back
           <button onClick={() => set({ recoup: deal.recoup.filter((_, j) => j !== i) })}>Remove</button>
         </div>
       ))}
-      <button onClick={() => set({ recoup: [...deal.recoup, { to: "", amount: 0 }] })}>Add payback</button>
+      <button onClick={() => set({ recoup: [...deal.recoup, { to: "", amount: 0, percentBack: 10000 }] })}>Add payback</button>
 
       <h3 className="muted">3. Then the rest is split (must total 100%, now {percent(splitTotal)}%)</h3>
       {deal.split.map((s, i) => (
