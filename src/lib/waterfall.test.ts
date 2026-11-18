@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { Deal, validate, gbp } from "./deal";
 import { payout, splitExact } from "./waterfall";
+import { samples } from "./samples";
 
 const deal: Deal = {
   title: "Test",
@@ -44,6 +45,12 @@ describe("validate", () => {
     expect(validate({ ...deal, split: [{ to: "A", bps: 9000 }] })[0]).toMatch(/90%/));
   it("refuses a negative payback", () =>
     expect(validate({ ...deal, recoup: [{ to: "A", amount: -5 }] }).length).toBeGreaterThan(0));
+});
+
+describe("samples", () => {
+  it("are all valid deals", () => {
+    for (const s of samples) expect(validate(s.deal)).toEqual([]);
+  });
 });
 
 describe("gbp", () => {
