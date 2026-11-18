@@ -1,0 +1,30 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f5f6fa; color: #1d1d1f; }
+main { max-width: 900px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { margin: 0 0 4px; font-size: 1.8rem; color: #2b3a67; }
+h2 { font-size: 1.1rem; margin: 0 0 10px; color: #2b3a67; }
+.lead { margin: 0 0 20px; color: #444; }
+.card { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px; }
+input, textarea { font: inherit; padding: 6px 8px; border: 1px solid #c8ccd8; border-radius: 6px; }
+input[type="text"] { flex: 1; min-width: 140px; }
+input[type="number"] { width: 130px; }
+textarea { width: 100%; min-height: 110px; }
+button { font: inherit; padding: 7px 12px; border-radius: 6px; border: 1px solid #2b3a67; background: #fff; color: #2b3a67; cursor: pointer; }
+button.primary { background: #2b3a67; color: #fff; }
+button.on { background: #2b3a67; color: #fff; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.muted { color: #666; font-size: 0.9rem; }
+.error { color: #b00020; margin: 4px 0; }
+.warn { background: #fff6d6; border-left: 3px solid #e0a800; padding: 8px 10px; margin: 6px 0; }
+.finding { border-left: 4px solid #999; padding: 10px 12px; margin: 10px 0; background: #fafbfd; border-radius: 0 6px 6px 0; }
+.finding.high { border-color: #c62828; }
+.finding.medium { border-color: #e0a800; }
+.finding.info { border-color: #4a6fa5; }
+.badge { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-right: 6px; }
+.high .badge { color: #c62828; }
+.medium .badge { color: #a77d00; }
+.info .badge { color: #4a6fa5; }
+pre { background: #1d1d1f; color: #e8e8e8; padding: 12px; border-radius: 6px; overflow: auto; font-size: 0.8rem; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.85rem; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; background: var(--c); }
