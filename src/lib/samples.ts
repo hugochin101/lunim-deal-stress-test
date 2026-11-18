@@ -37,7 +37,7 @@ export const samples: { deal: Deal; range: Range }[] = [
     deal: {
       title: "Paper Lanterns (short documentary)",
       recoup: [
-        { to: "Executive producer", amount: 4_000_000 },
+        { to: "Executive producer", amount: 4_000_000, percentBack: 12000 },
         { to: "Crowd backers", amount: 2_000_000 },
       ],
       split: [
