@@ -31,7 +31,7 @@ export function validate(deal: Deal): string[] {
     splitTotal += s.bps;
   }
   if (deal.split.length && splitTotal !== 10000)
-    errors.push(`The split adds up to ${(splitTotal / 100).toFixed(2)}%, not 100%.`);
+    errors.push(`The split adds up to ${pct(splitTotal)}, not 100%.`);
   return errors;
 }
 
