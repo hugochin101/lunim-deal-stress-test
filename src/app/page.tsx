@@ -59,6 +59,7 @@ export default function Home() {
     <main>
       <h1>Deal Stress Test</h1>
       <p className="lead">Find the surprises in a film deal before it is locked into a smart contract and can no longer change.</p>
+      <p className="muted">How it works: 1. choose or enter a deal. 2. run the stress test. 3. everyone marks each surprise, then the checked deal is ready to lock.</p>
 
       <section className="card">
         <h2>Choose a deal</h2>
