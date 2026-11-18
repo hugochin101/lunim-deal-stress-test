@@ -65,6 +65,21 @@ describe("stressTest", () => {
   });
 });
 
+describe("paybacks above 100%", () => {
+  const premium: Deal = { ...deal, recoup: [{ to: "Investors", amount: 50_000_000, percentBack: 12000 }] };
+
+  it("pays back the full amount owed before the split", () => {
+    expect(payout(premium, 75_000_000).totals.Investors).toBe(60_000_000);
+    expect(startsAt(premium).Crew).toBe(75_000_000);
+  });
+
+  it("explains the extra in plain words", () => {
+    expect(stressTest(premium, { low: 20_000_000, high: 150_000_000 }).find((x) => x.id === "premium-Investors")?.text).toBe(
+      "The payback to Investors is 120% of the £500,000 put in, so £600,000 goes to them before anyone shares in the rest.",
+    );
+  });
+});
+
 describe("curve", () => {
   it("accounts for every penny at every point", () => {
     for (const p of curve(deal, 150_000_000))

@@ -1,4 +1,4 @@
-import { Deal } from "./deal";
+import { Deal, owed } from "./deal";
 
 export interface Step {
   label: string;
@@ -33,7 +33,7 @@ export function payout(deal: Deal, revenue: number): Payout {
     left -= fee;
   }
   for (const r of deal.recoup) {
-    const paid = Math.min(left, r.amount);
+    const paid = Math.min(left, owed(r));
     steps.push({ label: "Payback", to: r.to, amount: paid });
     left -= paid;
   }

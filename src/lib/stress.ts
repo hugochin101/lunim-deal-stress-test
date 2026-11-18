@@ -1,4 +1,4 @@
-import { Deal, MAX_REVENUE, gbp, pct } from "./deal";
+import { Deal, MAX_REVENUE, gbp, pct, owed as owedOf } from "./deal";
 import { payout, parties } from "./waterfall";
 
 export interface Range {
@@ -40,7 +40,7 @@ export function startsAt(deal: Deal): Record<string, number> {
   let owed = 0;
   for (const r of deal.recoup) {
     note(r.to, lastEarningAtOrBelow(deal, owed));
-    owed += r.amount;
+    owed += owedOf(r);
   }
   const splitStart = lastEarningAtOrBelow(deal, owed);
   for (const s of deal.split) note(s.to, splitStart);
@@ -93,7 +93,7 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
   let owed = 0;
   for (const r of deal.recoup) {
     const from = gbp(lastEarningAtOrBelow(deal, owed));
-    owed += r.amount;
+    owed += owedOf(r);
     const to = gbp(lastEarningAtOrBelow(deal, owed));
     found.push({
       id: `band-${r.to}-${owed}`,
@@ -101,6 +101,18 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
       who: [r.to],
       text: `If the film earns between ${from} and ${to}, ${feeWord} goes to ${r.to}.`,
       figures: [from, to],
+    });
+  }
+
+  for (const r of deal.recoup) {
+    if ((r.percentBack ?? 10000) === 10000) continue;
+    const [back, put, total] = [pct(r.percentBack!), gbp(r.amount), gbp(owedOf(r))];
+    found.push({
+      id: `premium-${r.to}`,
+      severity: "medium",
+      who: [r.to],
+      text: `The payback to ${r.to} is ${back} of the ${put} put in, so ${total} goes to them before anyone shares in the rest.`,
+      figures: [back, put, total],
     });
   }
 
