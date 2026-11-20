@@ -16,7 +16,7 @@ export default function FixSuggestion({ deal, range, findingId, onUse }: { deal:
     const res = await fetch("/api/suggest", { method: "POST", body: JSON.stringify({ deal, range, findingId }) });
     const data = await res.json();
     setBusy(false);
-    if (!res.ok) return setError(data.error);
+    if (!res.ok) return setError([data.error, ...(data.errors ?? [])].join(" "));
     setFix(data);
   }
 
