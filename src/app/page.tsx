@@ -5,7 +5,7 @@ import Chart from "@/components/Chart";
 import MyPart from "@/components/MyPart";
 import FixSuggestion from "@/components/FixSuggestion";
 import { Deal, validate } from "@/lib/deal";
-import { Finding, Range } from "@/lib/stress";
+import { Finding, Range, rangeError } from "@/lib/stress";
 import { samples } from "@/lib/samples";
 
 type Explained = Finding & { plain: string; byAi: boolean };
@@ -24,10 +24,12 @@ export default function Home() {
   const [importText, setImportText] = useState("");
   const [unclear, setUnclear] = useState<string[]>([]);
 
-  const errors = validate(tidy(deal));
-  if (!(range.low >= 0 && range.low < range.high)) errors.push("The lowest expected amount must be below the highest.");
+  const clean = tidy(deal);
+  const errors = [...validate(clean), rangeError(range)].filter((e): e is string => Boolean(e));
+  // Any change to the deal or range makes earlier results out of date.
   const reset = () => { setFindings(null); setChoices({}); setMessage(""); };
   const edit = (d: Deal) => { setDeal(d); reset(); };
+  const setPounds = (end: keyof Range, value: string) => { setRange({ ...range, [end]: Math.round(Number(value) * 100) }); reset(); };
 
   async function importDeal() {
     setBusy(true); reset(); setUnclear([]);
@@ -42,10 +44,10 @@ export default function Home() {
 
   async function run() {
     setBusy(true); reset();
-    const res = await fetch("/api/explain", { method: "POST", body: JSON.stringify({ deal: tidy(deal), range }) });
+    const res = await fetch("/api/explain", { method: "POST", body: JSON.stringify({ deal: clean, range }) });
     const data = await res.json();
     setBusy(false);
-    if (!res.ok) return setMessage(data.error ?? data.errors?.join(" "));
+    if (!res.ok) return setMessage(data.errors?.join(" ") ?? data.error);
     setFindings(data.findings.map((f: Finding, i: number) => ({ ...f, plain: data.explanations[i].text, byAi: data.explanations[i].byAi })));
     if (!data.aiUsed) setMessage("No AI key is set, so findings use the engine's own wording.");
   }
@@ -53,7 +55,7 @@ export default function Home() {
   const allChecked = findings !== null && findings.every((f) => choices[f.id] === "intended");
   const toChange = findings?.filter((f) => choices[f.id] === "change").length ?? 0;
   const spec = allChecked && findings
-    ? JSON.stringify({ format: "lunim.stress.v1", deal: tidy(deal), expectedRange: range, acknowledged: findings.map((f) => f.id), checkedAt: new Date().toISOString() }, null, 2)
+    ? JSON.stringify({ format: "lunim.stress.v1", deal: clean, expectedRange: range, acknowledged: findings.map((f) => f.id), checkedAt: new Date().toISOString() }, null, 2)
     : "";
 
   return (
@@ -80,8 +82,8 @@ export default function Home() {
         <DealEditor deal={deal} onChange={edit} />
         <h3 className="muted">4. What do you expect the film to earn?</h3>
         <div className="row">
-          From £<input type="number" aria-label="Lowest expected" min={0} step={10000} value={range.low / 100} onChange={(e) => { setRange({ ...range, low: Math.round(Number(e.target.value) * 100) }); reset(); }} />
-          to £<input type="number" aria-label="Highest expected" min={0} step={10000} value={range.high / 100} onChange={(e) => { setRange({ ...range, high: Math.round(Number(e.target.value) * 100) }); reset(); }} />
+          From £<input type="number" aria-label="Lowest expected" min={0} step={10000} value={range.low / 100} onChange={(e) => setPounds("low", e.target.value)} />
+          to £<input type="number" aria-label="Highest expected" min={0} step={10000} value={range.high / 100} onChange={(e) => setPounds("high", e.target.value)} />
         </div>
         {errors.map((e) => <p key={e} className="error">{e}</p>)}
         <div className="row"><button className="primary" onClick={run} disabled={busy || errors.length > 0}>{busy ? "Working..." : "Run stress test"}</button></div>
@@ -102,7 +104,7 @@ export default function Home() {
                   <button className={choices[f.id] === "change" ? "on" : ""} onClick={() => setChoices((c) => ({ ...c, [f.id]: "change" }))}>No, change the deal</button>
                 </div>
                 {choices[f.id] === "change" && (
-                  <FixSuggestion deal={tidy(deal)} range={range} findingId={f.id}
+                  <FixSuggestion deal={clean} range={range} findingId={f.id}
                     onUse={(d) => { edit(d); setMessage("Change applied. Run the stress test again to check the new deal."); }} />
                 )}
               </div>
@@ -111,12 +113,12 @@ export default function Home() {
 
           <section className="card">
             <h2>Show me my part</h2>
-            <MyPart deal={tidy(deal)} range={range} notes={findings} />
+            <MyPart deal={clean} range={range} notes={findings} />
           </section>
 
           <section className="card">
             <h2>What each person receives as the film earns more</h2>
-            <Chart deal={tidy(deal)} high={range.high} />
+            <Chart deal={clean} high={range.high} />
           </section>
 
           <section className="card">
