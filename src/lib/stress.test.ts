@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Deal } from "./deal";
-import { startsAt, stressTest, curve } from "./stress";
+import { startsAt, stressTest, curve, rangeError } from "./stress";
 import { payout } from "./waterfall";
 
 const deal: Deal = {
@@ -78,6 +78,11 @@ describe("paybacks above 100%", () => {
       "The payback to Investors is 120% of the £500,000 put in, so £600,000 goes to them before anyone shares in the rest.",
     );
   });
+});
+
+describe("rangeError", () => {
+  it("accepts a sensible range", () => expect(rangeError({ low: 0, high: 100 })).toBeNull());
+  it("refuses a range that goes backwards", () => expect(rangeError({ low: 200, high: 100 })).not.toBeNull());
 });
 
 describe("curve", () => {

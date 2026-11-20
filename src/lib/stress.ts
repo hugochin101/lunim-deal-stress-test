@@ -1,9 +1,16 @@
-import { Deal, MAX_REVENUE, gbp, pct, owed as owedOf } from "./deal";
+// Stress test: finds the outcomes of a deal that people are unlikely to have checked.
+// All maths is exact (whole pence) and done here, never by the AI.
+import { Deal, MAX_REVENUE, gbp, owed, pct } from "./deal";
 import { payout, parties } from "./waterfall";
 
 export interface Range {
   low: number; // expected earnings, in pence
   high: number;
+}
+
+export function rangeError(range: Range): string | null {
+  const ok = Number.isInteger(range.low) && Number.isInteger(range.high) && 0 <= range.low && range.low < range.high && range.high <= MAX_REVENUE;
+  return ok ? null : "The lowest expected amount must be below the highest, and at most £1bn.";
 }
 
 export interface Finding {
@@ -20,13 +27,14 @@ const listNames = (n: string[]) => (n.length < 2 ? n[0] : `${n.slice(0, -1).join
 const afterFee = (deal: Deal, revenue: number) =>
   revenue - (deal.fee ? Math.floor((revenue * deal.fee.bps) / 10000) : 0);
 
-// The most the film can earn while everything after the fee is still used up by the first `owed` pence.
-function lastEarningAtOrBelow(deal: Deal, owed: number): number {
+// The most the film can earn while everything after the fee is still used up paying back `amount` pence.
+// Found by binary search, so it is exact to the penny.
+function lastEarningAtOrBelow(deal: Deal, amount: number): number {
   let lo = 0;
   let hi = MAX_REVENUE;
   while (lo < hi) {
     const mid = Math.ceil((lo + hi) / 2);
-    if (afterFee(deal, mid) <= owed) lo = mid;
+    if (afterFee(deal, mid) <= amount) lo = mid;
     else hi = mid - 1;
   }
   return lo;
@@ -37,12 +45,12 @@ export function startsAt(deal: Deal): Record<string, number> {
   const starts: Record<string, number> = {};
   const note = (to: string, at: number) => (starts[to] = Math.min(starts[to] ?? Infinity, at));
   if (deal.fee?.bps) note(deal.fee.to, 0);
-  let owed = 0;
+  let paidSoFar = 0;
   for (const r of deal.recoup) {
-    note(r.to, lastEarningAtOrBelow(deal, owed));
-    owed += owedOf(r);
+    note(r.to, lastEarningAtOrBelow(deal, paidSoFar));
+    paidSoFar += owed(r);
   }
-  const splitStart = lastEarningAtOrBelow(deal, owed);
+  const splitStart = lastEarningAtOrBelow(deal, paidSoFar);
   for (const s of deal.split) note(s.to, splitStart);
   return starts;
 }
@@ -89,23 +97,22 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
     }
   }
 
-  let owed = 0;
+  // Each payback has a band of earnings where all the money goes to that one party.
+  let paidSoFar = 0;
   for (const r of deal.recoup) {
-    const from = gbp(lastEarningAtOrBelow(deal, owed));
-    owed += owedOf(r);
-    const to = gbp(lastEarningAtOrBelow(deal, owed));
+    const from = gbp(lastEarningAtOrBelow(deal, paidSoFar));
+    paidSoFar += owed(r);
+    const to = gbp(lastEarningAtOrBelow(deal, paidSoFar));
     found.push({
-      id: `band-${r.to}-${owed}`,
+      id: `band-${r.to}-${paidSoFar}`,
       severity: "medium",
       who: [r.to],
       text: `If the film earns between ${from} and ${to}, ${feeWord} goes to ${r.to}.`,
       figures: [from, to],
     });
-  }
 
-  for (const r of deal.recoup) {
     if ((r.percentBack ?? 10000) === 10000) continue;
-    const [back, put, total] = [pct(r.percentBack!), gbp(r.amount), gbp(owedOf(r))];
+    const [back, put, total] = [pct(r.percentBack!), gbp(r.amount), gbp(owed(r))];
     found.push({
       id: `premium-${r.to}`,
       severity: "medium",
@@ -115,6 +122,7 @@ export function stressTest(deal: Deal, range: Range): Finding[] {
     });
   }
 
+  // A headline share can be worth far less once fees and paybacks come first.
   const split = payout(deal, range.high);
   for (const s of deal.split) {
     const onlyInSplit = !deal.recoup.some((r) => r.to === s.to) && deal.fee?.to !== s.to;
