@@ -18,7 +18,7 @@ export default function DealEditor({ deal, onChange }: { deal: Deal; onChange: (
         <input type="text" aria-label="Deal name" value={deal.title} onChange={(e) => set({ title: e.target.value })} />
       </div>
 
-      <h3 className="muted">1. Fee taken first (optional)</h3>
+      <h3>1. Fee taken first (optional)</h3>
       <div className="row">
         <input type="text" aria-label="Fee taken by" placeholder="e.g. Distributor" value={deal.fee?.to ?? ""}
           onChange={(e) => set({ fee: { to: e.target.value, bps: deal.fee?.bps ?? 0 } })} />
@@ -26,28 +26,28 @@ export default function DealEditor({ deal, onChange }: { deal: Deal; onChange: (
           onChange={(e) => set({ fee: { to: deal.fee?.to ?? "", bps: toBps(e.target.value) } })} /> %
       </div>
 
-      <h3 className="muted">2. Paid back, in this order</h3>
+      <h3>2. Paid back, in this order</h3>
       {deal.recoup.map((r, i) => (
         <div className="row" key={i}>
           <input type="text" aria-label="Paid back to" value={r.to}
             onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, to: e.target.value } : x)) })} />
-          £<input type="number" aria-label="Amount paid back" min={0} step={1000} value={pounds(r.amount)}
+          £<input type="number" className="money" aria-label="Amount paid back" min={0} step={1000} value={pounds(r.amount)}
             onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, amount: toPence(e.target.value) } : x)) })} />
           <input type="number" aria-label="Percent paid back" min={100} max={300} step={5} value={percent(r.percentBack ?? 10000)}
             onChange={(e) => set({ recoup: deal.recoup.map((x, j) => (j === i ? { ...x, percentBack: toBps(e.target.value) } : x)) })} /> % back
-          <button onClick={() => set({ recoup: deal.recoup.filter((_, j) => j !== i) })}>Remove</button>
+          <button className="remove" aria-label={`Remove ${r.to || "payback"}`} onClick={() => set({ recoup: deal.recoup.filter((_, j) => j !== i) })}>✕</button>
         </div>
       ))}
       <button onClick={() => set({ recoup: [...deal.recoup, { to: "", amount: 0, percentBack: 10000 }] })}>Add payback</button>
 
-      <h3 className="muted">3. Then the rest is split (must total 100%, now {percent(splitTotal)}%)</h3>
+      <h3>3. Then the rest is split (must total 100%, now {percent(splitTotal)}%)</h3>
       {deal.split.map((s, i) => (
         <div className="row" key={i}>
           <input type="text" aria-label="Split to" value={s.to}
             onChange={(e) => set({ split: deal.split.map((x, j) => (j === i ? { ...x, to: e.target.value } : x)) })} />
           <input type="number" aria-label="Split percent" min={0} max={100} step={0.5} value={percent(s.bps)}
             onChange={(e) => set({ split: deal.split.map((x, j) => (j === i ? { ...x, bps: toBps(e.target.value) } : x)) })} /> %
-          <button onClick={() => set({ split: deal.split.filter((_, j) => j !== i) })}>Remove</button>
+          <button className="remove" aria-label={`Remove ${s.to || "person"}`} onClick={() => set({ split: deal.split.filter((_, j) => j !== i) })}>✕</button>
         </div>
       ))}
       <button onClick={() => set({ split: [...deal.split, { to: "", bps: 0 }] })}>Add person</button>
