@@ -1,21 +1,20 @@
 import { NextResponse } from "next/server";
 import { validate } from "@/lib/deal";
-import { askClaude, readJson } from "@/lib/ai";
+import { aiAvailable, askAi, readJson } from "@/lib/ai";
 import { IMPORT_PROMPT, ReadDeal, toDeal } from "@/lib/import";
-import { allow, visitor } from "@/lib/limit";
+import { fail, tooMany } from "@/lib/limit";
 
-// Deal text is sent to the AI and returned; it is never stored or logged.
+// AI reads pasted deal text into a structured deal for a person to check. The text is never stored or logged.
 export async function POST(req: Request) {
-  if (!allow(visitor(req))) return NextResponse.json({ error: "Too many requests, try again in a minute." }, { status: 429 });
-  const body = (await req.json().catch(() => null)) as { text?: string } | null;
-  const text = body?.text?.trim() ?? "";
-  if (!text || text.length > 6000) return NextResponse.json({ error: "Paste deal terms of up to 6,000 characters." }, { status: 400 });
-  if (!process.env.ANTHROPIC_API_KEY)
-    return NextResponse.json({ error: "Importing deal text needs an API key on the server. Try a sample deal instead." }, { status: 503 });
+  const limited = tooMany(req);
+  if (limited) return limited;
+  const { text = "" } = ((await req.json().catch(() => null)) ?? {}) as { text?: string };
+  if (!text.trim() || text.length > 6000) return fail("Paste deal terms of up to 6,000 characters.", 400);
+  if (!aiAvailable()) return fail("Importing deal text needs an API key on the server. Try a sample deal instead.", 503);
 
-  const reply = await askClaude(IMPORT_PROMPT, text);
+  const reply = await askAi(IMPORT_PROMPT, text);
   const read = reply ? (readJson(reply) as ReadDeal | null) : null;
-  if (!read || typeof read !== "object") return NextResponse.json({ error: "The AI could not read those terms. Try rewording them." }, { status: 502 });
+  if (!read || typeof read !== "object") return fail("The AI could not read those terms. Try rewording them.", 502);
   const { deal, unclear } = toDeal(read);
   return NextResponse.json({ deal, unclear, errors: validate(deal) });
 }

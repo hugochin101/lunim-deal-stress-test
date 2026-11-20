@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 // In-memory limit: 10 requests a minute per visitor. Resets when the server restarts.
 const hits = new Map<string, number[]>();
 
@@ -8,4 +10,10 @@ export function allow(key: string, now = Date.now()): boolean {
   return true;
 }
 
-export const visitor = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+const visitor = (req: Request) => req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "local";
+
+// A JSON error reply, used by every API route.
+export const fail = (error: string, status: number, extra: object = {}) => NextResponse.json({ error, ...extra }, { status });
+
+// Returns an error reply if this visitor has made too many requests, otherwise null.
+export const tooMany = (req: Request) => (allow(visitor(req)) ? null : fail("Too many requests, try again in a minute.", 429));
