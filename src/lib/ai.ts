@@ -20,10 +20,16 @@ export async function askAi(system: string, user: string): Promise<string | null
         messages: [{ role: "user", content: user }],
       }),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      // Logs only the status and the API's reason (e.g. invalid key, no credit), never the deal text.
+      const reason = await res.json().then((e) => e?.error?.message).catch(() => "");
+      console.error(`AI request failed (${res.status}): ${reason}`);
+      return null;
+    }
     const data = await res.json();
     return data.content?.find((c: { type: string }) => c.type === "text")?.text ?? null;
-  } catch {
+  } catch (e) {
+    console.error(`AI request could not be sent: ${(e as Error).message}`);
     return null;
   }
 }
