@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 import { samples } from "@/lib/samples";
 import { fakeAi, post } from "@/test/fakeAi";
@@ -29,6 +29,15 @@ describe("POST /api/explain", () => {
       byAi: false,
       text: "Nothing is paid to Producer and Crew pool until the film earns more than £625,000.",
     });
+  });
+
+  it("says when a key is set but the AI does not answer", async () => {
+    process.env.ANTHROPIC_API_KEY = "test";
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ error: { message: "no credit" } }), { status: 400 })));
+    const res = await (await post(POST, { deal, range }, "e5")).json();
+    expect(res).toMatchObject({ aiUsed: false, aiConfigured: true });
+    expect(console.error).toHaveBeenCalledWith("AI request failed (400): no credit");
   });
 
   it("refuses a deal that does not add up", async () => {

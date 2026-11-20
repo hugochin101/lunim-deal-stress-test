@@ -11,6 +11,7 @@ export function fakeAi(reply: unknown) {
 afterEach(() => {
   delete process.env.ANTHROPIC_API_KEY;
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 // Calls an API route the way the browser would, from a given visitor.

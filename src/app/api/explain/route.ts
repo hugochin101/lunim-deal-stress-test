@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Deal, validate } from "@/lib/deal";
 import { Range, rangeError, stressTest } from "@/lib/stress";
-import { askAi, readJson } from "@/lib/ai";
+import { aiAvailable, askAi, readJson } from "@/lib/ai";
 import { explanationIsSafe } from "@/lib/check";
 import { fail, tooMany } from "@/lib/limit";
 
@@ -28,5 +28,5 @@ export async function POST(req: Request) {
     const byAi = typeof ai?.text === "string" && explanationIsSafe(ai.text, f.figures);
     return { id: f.id, text: byAi ? ai.text : f.text, byAi };
   });
-  return NextResponse.json({ findings, explanations, aiUsed: reply !== null });
+  return NextResponse.json({ findings, explanations, aiUsed: reply !== null, aiConfigured: aiAvailable() });
 }

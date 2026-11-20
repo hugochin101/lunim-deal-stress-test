@@ -53,7 +53,8 @@ export default function Home() {
     setBusy(false);
     if (!res.ok) return setMessage(data.errors?.join(" ") ?? data.error);
     setFindings(data.findings.map((f: Finding, i: number) => ({ ...f, plain: data.explanations[i].text, byAi: data.explanations[i].byAi })));
-    if (!data.aiUsed) setMessage("No AI key is set, so findings use the engine's own wording.");
+    if (!data.aiConfigured) setMessage("No AI key is set, so findings use the engine's own wording.");
+    else if (!data.aiUsed) setMessage("The AI service did not answer, so findings use the engine's own wording. Check the server logs for the reason.");
   }
 
   const allChecked = findings !== null && findings.every((f) => choices[f.id] === "intended");
