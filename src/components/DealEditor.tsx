@@ -1,6 +1,8 @@
 "use client";
 import { Deal } from "@/lib/deal";
 
+// Form for editing a deal. Shows pounds and percentages; stores pence and basis points.
+
 const pounds = (pence: number) => pence / 100;
 const percent = (bps: number) => bps / 100;
 const toPence = (v: string) => Math.round(Number(v) * 100);

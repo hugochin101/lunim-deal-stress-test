@@ -8,6 +8,8 @@ import { Deal, validate } from "@/lib/deal";
 import { Finding, Range, rangeError } from "@/lib/stress";
 import { samples } from "@/lib/samples";
 
+// The whole app on one page: choose a deal, run the stress test, review each surprise, then lock.
+
 type Explained = Finding & { plain: string; byAi: boolean };
 type Choice = "intended" | "change";
 

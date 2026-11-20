@@ -3,6 +3,8 @@ import { ReadDeal } from "./import";
 import { Range, startsAt } from "./stress";
 import { payout } from "./waterfall";
 
+// Helpers for AI suggested fixes. The AI proposes a deal; everything shown about it is worked out here by code.
+
 export const SUGGEST_PROMPT = `You help fix a film deal. You get the deal (in pounds and percentages), the expected earnings range,
 and one finding the people want changed. Propose the smallest change to the deal that addresses that finding,
 keeping everyone else's terms as close as possible. The split must still total 100%. Do not calculate payouts.

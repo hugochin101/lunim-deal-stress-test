@@ -1,5 +1,8 @@
 import { Deal, owed } from "./deal";
 
+// The payout engine: who gets what, in order, for one amount the film earns.
+// Fee first, then paybacks in order, then the split. Every penny is accounted for.
+
 export interface Step {
   label: string;
   to: string;
