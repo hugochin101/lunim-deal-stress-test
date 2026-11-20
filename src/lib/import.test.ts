@@ -20,6 +20,15 @@ describe("toDeal", () => {
     expect(validate(deal)).toEqual([]);
   });
 
+  it("reads numbers the AI wrote as text", () => {
+    const { deal } = toDeal({
+      fee: { to: "Agent", percent: "15%" as unknown as number },
+      recoup: [{ to: "Investors", pounds: "£400,000" as unknown as number }],
+      split: [{ to: "A", percent: "100%" as unknown as number }],
+    });
+    expect([deal.fee?.bps, deal.recoup[0].amount, deal.split[0].bps]).toEqual([1500, 40_000_000, 10000]);
+  });
+
   it("still lets validation refuse a bad reading", () => {
     const { deal } = toDeal({ split: [{ to: "A", percent: 70 }] });
     expect(validate(deal).length).toBeGreaterThan(0);
