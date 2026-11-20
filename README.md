@@ -50,7 +50,7 @@ On Lunim, a film's revenue split is locked into a smart contract once funding is
 npm install
 cp .env.example .env.local   # optional: add ANTHROPIC_API_KEY
 npm run dev                  # http://localhost:3000
-npm test                     # 49 tests
+npm test                     # 52 tests
 npm run typecheck
 npm run build
 ```
