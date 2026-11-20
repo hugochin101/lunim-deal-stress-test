@@ -5,10 +5,15 @@ import { payout } from "./waterfall";
 
 // Helpers for AI suggested fixes. The AI proposes a deal; everything shown about it is worked out here by code.
 
-export const SUGGEST_PROMPT = `You help fix a film deal. You get the deal (in pounds and percentages), the expected earnings range,
-and one finding the people want changed. Propose the smallest change to the deal that addresses that finding,
-keeping everyone else's terms as close as possible. The split must still total 100%. Do not calculate payouts.
-Return only JSON: {"reason": "one plain sentence", "deal": <the full changed deal, same shape as the input>}`;
+export const SUGGEST_PROMPT = `You help fix a film deal. You get the deal, the expected earnings range, and one finding the people want changed.
+Propose the smallest change that makes that finding less harsh, keeping everyone else's terms as close as possible.
+The deal can only change in these ways:
+- the fee: change its percent, or remove it by setting "fee" to null;
+- paybacks: change "pounds" or "percent_back" (100 to 300), reorder them, or remove one;
+- the split: change the percentages, add or remove a person. The split must total exactly 100.
+You must change at least one number. Use plain numbers only (400000, not "£400,000"). Do not calculate payouts.
+Return only JSON: {"reason": "one plain sentence, with no numbers", "deal": {"title": string, "fee": {"to": string, "percent": number} | null,
+"recoup": [{"to": string, "pounds": number, "percent_back": number}], "split": [{"to": string, "percent": number}]}}`;
 
 // The deal in the same pounds and percentages shape the AI reads and writes.
 export function toRead(deal: Deal): ReadDeal {
