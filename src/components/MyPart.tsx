@@ -22,13 +22,15 @@ export default function MyPart({ deal, range, notes }: { deal: Deal; range: Rang
           {names.map((n) => <option key={n}>{n}</option>)}
         </select>
       </div>
-      <p><b>{part.startLine}</b></p>
-      <table>
-        <thead><tr><th>If the film earns</th><th>{name} would get</th></tr></thead>
-        <tbody>
-          {part.examples.map((e) => <tr key={e.earns}><td>{gbp(e.earns)}</td><td>{gbp(e.gets)}</td></tr>)}
-        </tbody>
-      </table>
+      <p className="mine">{part.startLine}</p>
+      <div className="tiles">
+        {part.examples.map((e) => (
+          <div className="tile" key={e.earns}>
+            <small>If the film earns {gbp(e.earns)}</small>
+            <strong>{gbp(e.gets)}</strong>
+          </div>
+        ))}
+      </div>
       {mine.length > 0 && (
         <>
           <p className="muted">Surprises that affect {name}:</p>
