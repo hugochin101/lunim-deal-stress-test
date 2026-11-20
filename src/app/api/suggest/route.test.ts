@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 import { samples } from "@/lib/samples";
 import { toRead } from "@/lib/suggest";
@@ -27,6 +27,27 @@ describe("POST /api/suggest", () => {
   it("rejects a suggested deal that does not add up", async () => {
     fakeAi({ reason: "x", deal: { ...toRead(deal), split: [{ to: "Producer", percent: 50 }, { to: "Crew pool", percent: 30 }] } });
     expect((await ask("s3")).status).toBe(422);
+  });
+
+  it("tells the AI why its first suggestion failed, and uses a good second one", async () => {
+    process.env.ANTHROPIC_API_KEY = "test";
+    const bad = { reason: "x", deal: { ...toRead(deal), split: [{ to: "Producer", percent: 90 }] } };
+    const good = { reason: "Lower the payback so the crew are paid sooner.", deal: lowerPayback() };
+    const replies = [bad, good].map((r) => new Response(JSON.stringify({ content: [{ type: "text", text: JSON.stringify(r) }] })));
+    const fetchMock = vi.fn(async () => replies.shift()!);
+    vi.stubGlobal("fetch", fetchMock);
+    const res = await ask("s6");
+    expect(res.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const secondAsk = JSON.parse((fetchMock.mock.calls[1] as unknown as [string, { body: string }])[1].body).messages[0].content;
+    expect(secondAsk).toContain("Your last suggestion was rejected: The split adds up to 90%, not 100%.");
+  });
+
+  it("gives up after two failed suggestions and says why", async () => {
+    fakeAi({ reason: "x", deal: toRead(deal) });
+    const res = await ask("s7");
+    expect(res.status).toBe(422);
+    expect((await res.json()).errors).toEqual(["It made no change to the deal."]);
   });
 
   it("drops an AI reason that uses a made up figure", async () => {

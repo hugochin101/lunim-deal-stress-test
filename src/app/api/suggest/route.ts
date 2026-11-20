@@ -18,20 +18,27 @@ export async function POST(req: Request) {
   if (!finding) return fail("That surprise was not found. Run the test again.", 400);
   if (!aiAvailable()) return fail("Suggesting a fix needs an API key on the server. You can still edit the deal by hand.", 503);
 
-  const question = { deal: toRead(deal), expectedRangePounds: [range.low / 100, range.high / 100], finding: finding.text };
-  const reply = await askAi(SUGGEST_PROMPT, JSON.stringify(question));
-  const read = reply ? (readJson(reply) as { reason?: string; deal?: ReadDeal } | null) : null;
-  if (!read?.deal) return fail("The AI did not suggest a usable change. Try editing by hand.", 502);
+  const question = JSON.stringify({ deal: toRead(deal), expectedRangePounds: [range.low / 100, range.high / 100], finding: finding.text });
 
-  const proposal = toDeal(read.deal).deal;
-  const errors = validate(proposal);
-  if (errors.length) return fail("The AI suggested a deal that does not add up, so it was rejected.", 422, { errors });
-  const changes = describeChanges(deal, proposal);
-  if (!changes.length) return fail("The AI suggested no real change. Try editing by hand.", 422);
+  // Ask once; if the suggestion fails the checks, tell the AI exactly why and ask one more time.
+  let problems: string[] = [];
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const retry = problems.length ? `\nYour last suggestion was rejected: ${problems.join(" ")} Please fix this.` : "";
+    const reply = await askAi(SUGGEST_PROMPT, question + retry);
+    const read = reply ? (readJson(reply) as { reason?: string; deal?: ReadDeal } | null) : null;
+    if (!read?.deal) return fail("The AI did not suggest a usable change. Try editing by hand.", 502);
 
-  // The AI's reason may only mention figures that code has already worked out.
-  const impact = describeImpact(deal, proposal, range, finding.who);
-  const allowed = figuresIn([...changes, ...impact].join(" "));
-  const reason = typeof read.reason === "string" && explanationIsSafe(read.reason, allowed) ? read.reason : "The AI suggested the changes below.";
-  return NextResponse.json({ reason, deal: proposal, changes, impact });
+    const proposal = toDeal(read.deal).deal;
+    problems = validate(proposal);
+    const changes = describeChanges(deal, proposal);
+    if (!problems.length && !changes.length) problems = ["It made no change to the deal."];
+    if (problems.length) continue;
+
+    // The AI's reason may only mention figures that code has already worked out.
+    const impact = describeImpact(deal, proposal, range, finding.who);
+    const allowed = figuresIn([...changes, ...impact].join(" "));
+    const reason = typeof read.reason === "string" && explanationIsSafe(read.reason, allowed) ? read.reason : "The AI suggested the changes below.";
+    return NextResponse.json({ reason, deal: proposal, changes, impact });
+  }
+  return fail("The AI could not suggest a change that passes the checks. Try editing by hand.", 422, { errors: problems });
 }
