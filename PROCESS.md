@@ -2,8 +2,9 @@
 
 ## Honest timeline
 
-- **18 November (evening, before my official start):** I explored ideas with Claude (an AI assistant). My first idea, a "Deal Waterfall Explainer", turned out to overlap with an existing Lunim intern project (a payout simulator), so I switched to the Deal Stress Test. I then scored my own prototype harshly against Lunim's evaluation criteria and added what scored lowest: an AI "suggest a fix" step, a "Show me my part" view, paybacks above 100%, and a plain lock summary. Claude wrote most of the code under my direction; I chose the idea, set the rules (AI never does the maths, a person decides everything) and reviewed each step. The commit history shows this work.
-- **19 November (official start, 10:00 GMT):** I deployed the app, tested the AI features with a real key, took the screenshots below and finalised the summary.
+- **18 November (evening, before my official start of 19 November, 10:00 GMT):** I explored ideas with Claude (an AI assistant). My first idea, a "Deal Waterfall Explainer", turned out to overlap with an existing Lunim intern project (a payout simulator), so I switched to the Deal Stress Test. I then scored my own prototype harshly against Lunim's evaluation criteria and added what scored lowest: an AI "suggest a fix" step, a "Show me my part" view, paybacks above 100%, and a plain lock summary. Claude wrote most of the code under my direction; I chose the idea, set the rules (AI never does the maths, a person decides everything) and reviewed each step.
+- **20 November:** I tidied the code, compared six visual designs and chose one, deployed to Vercel and tested the AI features live with a real key. The live test showed AI fixes being rejected by the safety checks, so I gave the AI clearer rules about which changes it may suggest and let it retry once with the reasons it was rejected.
+- The commit history shows all of this work, with its real dates.
 
 ## Screenshot guide (up to five)
 
